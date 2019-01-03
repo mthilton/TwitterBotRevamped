@@ -3,16 +3,16 @@ Takes current user listening data and creates and tweets out the song, artist, a
 This repository is meant for view purposes only at the moment. Therefor the code isn't portable.
 This will be changed in the future but for now this is how it is.   
 
-#Required Libraries
+# Required Libraries
 - Spotipy
 - Python-Twitter
 
-#Upcoming Features
+# Upcoming Features
 - Instead of just having the artists' name, use their twitter handle so they have a direct link.
 - Create a database of songs listned to so we can have like a weekly top hits playlist created and tweeted out.
 
 
-#Changelog
+# Changelog
 - 1/2/2019
    - Initial Commit
 
