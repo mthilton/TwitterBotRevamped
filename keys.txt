@@ -1,4 +1,7 @@
-consumer_key
-consumer_secret
-access_token_key
-access_token_secret
+twitter_consumer_key
+twitter_consumer_secret
+twitter_access_token_key
+twitter_access_token_secret
+spotify_username
+spotify_client_id
+spotify_client_secret
