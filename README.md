@@ -1,5 +1,7 @@
 # TwitterBotRevamped
-Takes current user listening data and creates and tweets out the song, artist, and song link.   
+Takes current user listening data and creates and tweets out the song, artist, and song link.
+This repository is meant for view purposes only at the moment. Therefor the code isn't portable.
+This will be changed in the future but for now this is how it is.   
 
 #Required Libraries
 - Spotipy
