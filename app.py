@@ -8,9 +8,11 @@ import time
 
 sys.path.append('../')
 from env import env as enviorn
+from twitter_functions import twitter_functions as twitfunc
 
 # Creates an Authentication object that has all of the keys for twitter and spotify
 e = enviorn()
+tf = twitfunc()
 
 # initalizing Twiter access
 twit = twitter.Api(consumer_key=e.twit_consumer_key,
@@ -41,67 +43,73 @@ while True:
 
             results = sp.current_user_playing_track()
 
-            # Grab relavent information form the payload
-            tr_name = results["item"]["name"]
-            tr_link = results["item"]["external_urls"]["spotify"]
-            cur_tr_prog = results["progress_ms"]
-            tr_len = results["item"]["duration_ms"]
-            cur_tr_uri = results["item"]["uri"]
+            # Grab relavent information from the payload if there are results
+            if(results != None):
 
-            # Fetching the Artists in on the song and concating them to a string
-            num_artists = len(results["item"]["artists"])
+                tr_name = results["item"]["name"]
+                artist_query = []
+                tr_link = results["item"]["external_urls"]["spotify"]
+                cur_tr_prog = results["progress_ms"]
+                tr_len = results["item"]["duration_ms"]
+                cur_tr_uri = results["item"]["uri"]
 
-            # If there are more than one artist then run a for loop
-            if num_artists > 1:
-                tr_artist = results["item"]["artists"][0]["name"] + ", "
+                # Fetching the Artists in on the song and putting them into a list
+                num_artists = len(results["item"]["artists"])
 
-                for a in results["item"]["artists"][1:num_artists-2]:
-                    tr_artist += a["name"] + ", "
+                for i in range(num_artists):
+                    artist_query.append(results["item"]["artists"][i]["name"])
 
-                tr_artist += "and " + results["item"]["artists"][num_artists-1]["name"]
+                # If the song is currently playing, its been playing for longer than
+                # half of its duration, and its not the previous track, then Tweet it out
+                if (results["is_playing"] and
+                    tr_len/2 < cur_tr_prog and
+                    cur_tr_uri != prev_tr_uri):
 
-            # Otherwise just grab the artist string from the payload
+                    # Catching Twitter Error
+                    try:
+                        tr_artist = tf.lookup_user(twit = twit, query = artist_query)
+                        status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
+                        print(status)
+                        prev_tr_uri = cur_tr_uri
+
+                    except twitter.error.TwitterError as err:
+                        print("This song has already been tweeted!\n" + repr(err))
+
+                    except twitfunc.InvalidTwitterAuthError as err:
+                        print(err)
+
+                    slp_time = (tr_len - cur_tr_prog) / 1000
+                    print("Sleeping for {} seconds!".format(slp_time))
+                    time.sleep(slp_time)
+
+                # If the song is not playing then inform the client console
+                elif (results["is_playing"] == False):
+                    print("Not currently playing anything!")
+                    print("Sleeping for 20 seconds!")
+                    time.sleep(20)
+
+                # If the current song uri is equal to the previous song uri, then
+                # Inform the client console
+                elif (cur_tr_uri == prev_tr_uri):
+                    print("The current song is still the previous song!")
+                    slp_time = (tr_len - cur_tr_prog) / 1000
+                    if slp_time < 1:
+                        slp_time = 2
+                    print("Sleeping for {} seconds!".format(slp_time))
+                    time.sleep(slp_time)
+
+                # Otherwise, inform the client console that the user hasn't listened
+                # to at least half of the song.
+                else:
+                    print("Have not listened to enough of the song!")
+                    hwp = tr_len/2
+                    slp_time = (hwp - cur_tr_prog) / 1000
+                    print("Sleeping for {} seconds!".format(slp_time))
+                    time.sleep(slp_time)
+
             else:
-                tr_artist = results["item"]["artists"][0]["name"]
-
-            # If the song is currently playing, its been playing for longer than
-            # half of its duration, and its not the previous track, then Tweet it out
-            if (results["is_playing"] and
-                tr_len/2 < cur_tr_prog and
-                cur_tr_uri != prev_tr_uri):
-
-                # Catching Twitter Error
-                try:
-                    status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                    print(status)
-                    prev_tr_uri = cur_tr_uri
-                except twitter.error.TwitterError as err:
-                    print("This song has already been tweeted!\n" + repr(err))
-
-                slp_time = (tr_len - cur_tr_prog) / 1000
-                time.sleep(slp_time)
-
-            # If the song is not playing then inform the client console
-            elif (results["is_playing"] == False):
-                print("Not currently playing anything!")
-                time.sleep(20)
-
-            # If the current song uri is equal to the previous song uri, then
-            # Inform the client console
-            elif (cur_tr_uri == prev_tr_uri):
-                print("The current song is still the previous song!")
-                slp_time = (tr_len - cur_tr_prog) / 1000
-                print("Sleeping for {} seconds!".format(slp_time))
-                time.sleep(slp_time)
-
-            # Otherwise, inform the client console that the user hasn't listened
-            # to at least half of the song.
-            else:
-                print("Have not listened to enough of the song!")
-                hwp = tr_len/2
-                slp_time = (hwp - cur_tr_prog) / 1000
-                print("Sleeping for {} seconds!".format(slp_time))
-                time.sleep(slp_time)
+                print("No user currently logged in, sleeping for 60 seconds!")
+                time.sleep(60)
 
     # Otherwise authentication failed and we will kill the program
     else:
