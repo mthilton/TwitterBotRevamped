@@ -1,15 +1,15 @@
 # TwitterBotRevamped
 Takes current user listening data and creates and tweets out the song, artist, and song link.   
 
-# Required Libraries
+## Required Libraries
 - Spotipy
 - Python-Twitter
 
-# Upcoming Features
+## Upcoming Features
 - (ADDED... sort of. See Changelog - 1/4)Instead of just having the artists' name, use their twitter handle so they have a direct link.
 - Create a database of songs listened to so we can have like a weekly top hits playlist created and tweeted out.
 
-# Changelog
+## Changelog
 - 1/4/2019
    - *NEW* If the artist has a verified twitter account, the bot will now link the artists' account as well (For now the query is limited to the first 5 results from twitter) (Sorry unverified artists :( )
 
