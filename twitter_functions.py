@@ -36,6 +36,7 @@ class twitter_functions:
 
         # Function Vars
         final_string = ""
+        pot_final_string = ""
         twitterHandles = {}
 
         # For every string in the query list send a search request to twitter
@@ -64,14 +65,19 @@ class twitter_functions:
         for i in range(len(query)):
             if i == len(query) - 1:
                 if twitterHandles[query[i]] != None:
-                    final_string += twitterHandles[query[i]]
+                    pot_final_string += twitterHandles[query[i]]
                 else:
-                    final_string += query[i]
+                    pot_final_string += query[i]
+                final_string += query[i]
 
             else:
                 if twitterHandles[query[i]] != None:
-                    final_string += twitterHandles[query[i]] + ", "
+                    pot_final_string += twitterHandles[query[i]] + ", "
                 else:
-                    final_string += query[i] + ", "
+                    pot_final_string += query[i] + ", "
+                final_string += query[i] + ", "
 
+        # Disabling this function becuase I need some ai in order make sure that
+        # I get the proper twitter handles. Going back to the old method
+        print("Found these Twitter Handles: " + pot_final_string)
         return final_string
