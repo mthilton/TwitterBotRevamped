@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
-import spotipy
+import sys, time, math, pprint, twitter, spotipy
 import spotipy.util as util
-import twitter
-import time
 
 sys.path.append('../')
 from env import env as enviorn
@@ -69,6 +66,7 @@ while True:
                     try:
                         tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                         status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
+                        # pprint.pprint(results["item"]["artists"][0])
                         print(status)
                         prev_tr_uri = cur_tr_uri
 
