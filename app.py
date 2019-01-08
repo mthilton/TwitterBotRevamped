@@ -81,9 +81,9 @@ def mainLoop():
                             # pprint.pprint(results["item"]["artists"][0])
                             print(status)
                             with open(sys.argv[1], "a") as log:
-                                log.write("Sucessful Tweet!")
-                                log.write(status)
-                                log.write("--------------------------------------------------------------------------")
+                                log.write("Sucessful Tweet!\n")
+                                log.write(str(status) + "\n")
+                                log.write("--------------------------------------------------------------------------\n")
                             prev_tr_uri = cur_tr_uri
 
                         except twitter.error.TwitterError as err:
@@ -134,6 +134,6 @@ try:
     mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
-        log.write("An unspecified Error has occured!: {}".format(e))
-        log.write("--------------------------END LOGFILE--------------------------")
+        log.write("An unspecified Error has occured!: {}\n".format(e))
+        log.write("--------------------------END LOGFILE--------------------------\n")
         raise
