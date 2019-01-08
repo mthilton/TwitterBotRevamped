@@ -7,109 +7,135 @@ sys.path.append('../')
 from env import env as enviorn
 from twitter_functions import twitter_functions as twitfunc
 
-# Creates an Authentication object that has all of the keys for twitter and spotify
-e = enviorn()
-tf = twitfunc()
+# Verifing valid log file
+try:
+    testfile = open(sys.argv[1],"r")
+finally:
+    print("Invalid Log File!\n Usage: ./app.py <logfile>")
+testfile.close()
 
-# initalizing Twiter access
-twit = twitter.Api(consumer_key=e.twit_consumer_key,
-                  consumer_secret=e.twit_consumer_secret,
-                  access_token_key=e.twit_access_token_key,
-                  access_token_secret=e.twit_access_token_secret)
+# Functions
 
-cur_tr_uri = str()
-prev_tr_uri = str()
+def grabFromPayload(results):
+    return results["item"]["name"],
+            results["item"]["external_urls"]["spotify"],
+            results["progress_ms"],
+            results["item"]["duration_ms"],
+            results["item"]["uri"]
 
-while True:
+def mainLoop():
 
-    slp_time = 0
-    hwp = 0
+    # Creates an Authentication object that has all of the keys for twitter and spotify
+    e = enviorn()
+    tf = twitfunc()
 
-    # Spotify Authentication
-    scope = 'user-read-currently-playing'
-    token = util.prompt_for_user_token(username=e.spot_username,
-                                        scope=scope,
-                                        client_id=e.spot_client_id,
-                                        client_secret= e.spot_client_secret,
-                                        redirect_uri=e.spot_redirect_uri)
+    # initalizing Twiter access
+    twit = twitter.Api(consumer_key=e.twit_consumer_key,
+                      consumer_secret=e.twit_consumer_secret,
+                      access_token_key=e.twit_access_token_key,
+                      access_token_secret=e.twit_access_token_secret)
 
-    # On success grab the current user playing track
-    if token:
+    cur_tr_uri = str()
+    prev_tr_uri = str()
 
-            sp = spotipy.Spotify(auth=token)
+    while True:
 
-            results = sp.current_user_playing_track()
+        slp_time = 0
+        hwp = 0
 
-            # Grab relavent information from the payload if there are results
-            if(results != None):
+        # Spotify Authentication
+        scope = 'user-read-currently-playing'
+        token = util.prompt_for_user_token(username=e.spot_username,
+                                            scope=scope,
+                                            client_id=e.spot_client_id,
+                                            client_secret= e.spot_client_secret,
+                                            redirect_uri=e.spot_redirect_uri)
 
-                tr_name = results["item"]["name"]
-                artist_query = []
-                tr_link = results["item"]["external_urls"]["spotify"]
-                cur_tr_prog = results["progress_ms"]
-                tr_len = results["item"]["duration_ms"]
-                cur_tr_uri = results["item"]["uri"]
+        # On success grab the current user playing track
+        if token:
 
-                # Fetching the Artists in on the song and putting them into a list
-                num_artists = len(results["item"]["artists"])
+                sp = spotipy.Spotify(auth=token)
 
-                for i in range(num_artists):
-                    artist_query.append(results["item"]["artists"][i]["name"])
+                results = sp.current_user_playing_track()
 
-                # If the song is currently playing, its been playing for longer than
-                # half of its duration, and its not the previous track, then Tweet it out
-                if (results["is_playing"] and
-                    tr_len/2 < cur_tr_prog and
-                    cur_tr_uri != prev_tr_uri):
+                # Grab relavent information from the payload if there are results
+                if(results != None):
 
-                    # Catching Twitter Error
-                    try:
-                        tr_artist = tf.lookup_user(twit = twit, query = artist_query)
-                        status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                        # pprint.pprint(results["item"]["artists"][0])
-                        print(status)
-                        prev_tr_uri = cur_tr_uri
+                    artist_query = []
+                    tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload()
 
-                    except twitter.error.TwitterError as err:
-                        print("This song has already been tweeted!\n" + repr(err))
+                    # Fetching the Artists in on the song and putting them into a list
+                    num_artists = len(results["item"]["artists"])
 
-                    except twitfunc.InvalidTwitterAuthError as err:
-                        print(err)
+                    for i in range(num_artists):
+                        artist_query.append(results["item"]["artists"][i]["name"])
 
-                    slp_time = (tr_len - cur_tr_prog) / 1000
-                    print("Sleeping for {} seconds!".format(slp_time))
-                    time.sleep(slp_time)
+                    # If the song is currently playing, its been playing for longer than
+                    # half of its duration, and its not the previous track, then Tweet it out
+                    if (results["is_playing"] and
+                        tr_len/2 < cur_tr_prog and
+                        cur_tr_uri != prev_tr_uri):
 
-                # If the song is not playing then inform the client console
-                elif (results["is_playing"] == False):
-                    print("Not currently playing anything!")
-                    print("Sleeping for 20 seconds!")
-                    time.sleep(20)
+                        # Catching Twitter Error
+                        try:
+                            tr_artist = tf.lookup_user(twit = twit, query = artist_query)
+                            status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
+                            # pprint.pprint(results["item"]["artists"][0])
+                            print(status)
+                            with open(sys.argv[1], "a") as log:
+                                log.write("Sucessful Tweet!")
+                                log.write(status)
+                                log.write("--------------------------------------------------------------------------")
+                            prev_tr_uri = cur_tr_uri
 
-                # If the current song uri is equal to the previous song uri, then
-                # Inform the client console
-                elif (cur_tr_uri == prev_tr_uri):
-                    print("The current song is still the previous song!")
-                    slp_time = (tr_len - cur_tr_prog) / 1000
-                    if slp_time < 1:
-                        slp_time = 2
-                    print("Sleeping for {} seconds!".format(slp_time))
-                    time.sleep(slp_time)
+                        except twitter.error.TwitterError as err:
+                            print("This song has already been tweeted!\n" + repr(err))
 
-                # Otherwise, inform the client console that the user hasn't listened
-                # to at least half of the song.
+                        except twitfunc.InvalidTwitterAuthError as err:
+                            print(err)
+
+                        slp_time = (tr_len - cur_tr_prog) / 1000
+                        print("Sleeping for {} seconds!".format(slp_time))
+                        time.sleep(slp_time)
+
+                    # If the song is not playing then inform the client console
+                    elif (results["is_playing"] == False):
+                        print("Not currently playing anything!")
+                        print("Sleeping for 20 seconds!")
+                        time.sleep(20)
+
+                    # If the current song uri is equal to the previous song uri, then
+                    # Inform the client console
+                    elif (cur_tr_uri == prev_tr_uri):
+                        print("The current song is still the previous song!")
+                        slp_time = (tr_len - cur_tr_prog) / 1000
+                        if slp_time < 1:
+                            slp_time = 2
+                        print("Sleeping for {} seconds!".format(slp_time))
+                        time.sleep(slp_time)
+
+                    # Otherwise, inform the client console that the user hasn't listened
+                    # to at least half of the song.
+                    else:
+                        print("Have not listened to enough of the song!")
+                        hwp = tr_len/2
+                        slp_time = (hwp - cur_tr_prog) / 1000
+                        print("Sleeping for {} seconds!".format(slp_time))
+                        time.sleep(slp_time)
+
                 else:
-                    print("Have not listened to enough of the song!")
-                    hwp = tr_len/2
-                    slp_time = (hwp - cur_tr_prog) / 1000
-                    print("Sleeping for {} seconds!".format(slp_time))
-                    time.sleep(slp_time)
+                    print("No user currently logged in, sleeping for 60 seconds!")
+                    time.sleep(60)
 
-            else:
-                print("No user currently logged in, sleeping for 60 seconds!")
-                time.sleep(60)
+        # Otherwise authentication failed and we will kill the program
+        else:
+            print ("Can't get token for " + username)
+            exit()
 
-    # Otherwise authentication failed and we will kill the program
-    else:
-        print ("Can't get token for " + username)
-        exit()
+try:
+    mainLoop()
+except Exception as e:
+    with open(sys.argv[1], "a") as log:
+        log.write("An unspecified Error has occured!: {}".format(e))
+        log.write("--------------------------END LOGFILE--------------------------")
+        raise

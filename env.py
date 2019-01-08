@@ -13,3 +13,4 @@ class env:
         self.spot_client_id = keys[5].strip()
         self.spot_client_secret = keys[6].strip()
         self.spot_redirect_uri = keys[7].strip()
+        keys_file.close()
