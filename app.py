@@ -13,7 +13,7 @@ try:
 except IOError:
     print("Invalid Log File!\n Usage: ./app.py <logfile>")
     raise
-    
+
 testfile.close()
 
 # Functions
@@ -60,7 +60,7 @@ def mainLoop():
                 if(results != None):
 
                     artist_query = []
-                    tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload()
+                    tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
                     # Fetching the Artists in on the song and putting them into a list
                     num_artists = len(results["item"]["artists"])
