@@ -10,8 +10,10 @@ from twitter_functions import twitter_functions as twitfunc
 # Verifing valid log file
 try:
     testfile = open(sys.argv[1],"r")
-finally:
+except IOError:
     print("Invalid Log File!\n Usage: ./app.py <logfile>")
+    raise
+    
 testfile.close()
 
 # Functions
