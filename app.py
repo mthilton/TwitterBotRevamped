@@ -134,6 +134,6 @@ try:
     mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
-        log.write("An unspecified Error has occured!: {}\n".format(e))
+        log.write("An unspecified Error has occured!: {}\n".format(repr(e)))
         log.write("--------------------------END LOGFILE--------------------------\n")
         raise
