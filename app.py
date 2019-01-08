@@ -17,11 +17,7 @@ testfile.close()
 # Functions
 
 def grabFromPayload(results):
-    return results["item"]["name"],
-            results["item"]["external_urls"]["spotify"],
-            results["progress_ms"],
-            results["item"]["duration_ms"],
-            results["item"]["uri"]
+    return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
 
 def mainLoop():
 
