@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, time, math, pprint, twitter, spotipy
+import datetime, traceback
 import spotipy.util as util
 
 sys.path.append('../')
@@ -27,12 +28,6 @@ def mainLoop():
     e = enviorn()
     tf = twitfunc()
 
-    # initalizing Twiter access
-    twit = twitter.Api(consumer_key=e.twit_consumer_key,
-                      consumer_secret=e.twit_consumer_secret,
-                      access_token_key=e.twit_access_token_key,
-                      access_token_secret=e.twit_access_token_secret)
-
     cur_tr_uri = str()
     prev_tr_uri = str()
 
@@ -40,6 +35,12 @@ def mainLoop():
 
         slp_time = 0
         hwp = 0
+
+        # Twitter Authentication
+        twit = twitter.Api(consumer_key=e.twit_consumer_key,
+                            consumer_secret=e.twit_consumer_secret,
+                            access_token_key=e.twit_access_token_key,
+                            access_token_secret=e.twit_access_token_secret)
 
         # Spotify Authentication
         scope = 'user-read-currently-playing'
@@ -134,6 +135,9 @@ try:
     mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
-        log.write("An unspecified Error has occured!: {}\n".format(repr(e)))
+        currTime = datetime.datetimen.now()
+        tb = sys.exe_info()
+        log.write("[{}]An Error has occured!: {}\n".format(str(currTime), repr(e)))
+        traceback.print_tb(tb[2], file=log)
         log.write("--------------------------END LOGFILE--------------------------\n")
         raise
