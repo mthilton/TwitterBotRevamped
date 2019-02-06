@@ -22,7 +22,7 @@ testfile.close()
 def grabFromPayload(results):
     return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
 
-def calcSleep(slp_time, prev_track_uri):
+def calcSleep(sp, slp_time, prev_track_uri):
     results = sp.current_user_playing_track()
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
@@ -114,7 +114,7 @@ def mainLoop():
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         while slp_time > 0:
-                            slp_time = calcSleep(slp_time, prev_tr_uri)
+                            slp_time = calcSleep(sp, slp_time, prev_tr_uri)
 
                     # If the song is not playing then inform the client console
                     elif (results["is_playing"] == False):
@@ -133,7 +133,7 @@ def mainLoop():
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         while slp_time > 0:
-                            slp_time = calcSleep(slp_time, prev_tr_uri)
+                            slp_time = calcSleep(sp, slp_time, prev_tr_uri)
 
                     # Otherwise, inform the client console that the user hasn't listened
                     # to at least half of the song.
@@ -144,7 +144,7 @@ def mainLoop():
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         while slp_time > 0:
-                            slp_time = calcSleep(slp_time, prev_tr_uri)
+                            slp_time = calcSleep(sp, slp_time, prev_tr_uri)
 
                 else:
                     print("No user currently logged in, sleeping for 60 seconds!")
