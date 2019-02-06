@@ -83,7 +83,9 @@ def mainLoop():
                             print(status)
                             with open(sys.argv[1], "a") as log:
                                 log.write("Sucessful Tweet!\n")
-                                log.write(str(status) + "\n")
+                                log.write("Tweet: " + status["text"] + "\n")
+                                log.write("Tweet ID: " + status["id_str"] + "\n")
+                                log.write("Timestamp: " + status["created_at"] + "\n")
                                 log.write("--------------------------------------------------------------------------\n")
                             prev_tr_uri = cur_tr_uri
 
