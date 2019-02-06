@@ -26,19 +26,21 @@ def calcSleep(sp, slp_time, prev_tr_uri):
     results = sp.current_user_playing_track()
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
-    if ((cur_tr_prog/1000) > 5):
-        time.sleep(5)
-        if (cur_tr_uri != prev_tr_uri):
-            print("Awoken Early!")
-            print(cur_tr_uri + "vs" + prev_tr_uri)
-            slp_time = 0
-        else:
+    print(cur_tr_uri + " vs " + prev_tr_uri)
+
+    if (cur_tr_uri == prev_tr_uri):
+        if ((cur_tr_prog/1000) > 5):
+            time.sleep(5)
             slp_time -= 5
+        else:
+            time.sleep(math.ceil(cur_tr_prog/1000))
+            slp_time = 0
     else:
-        time.sleep(math.ceil(cur_tr_prog/1000))
+        print("Awoken Early!\n")
+        prev_tr_uri = cur_tr_uri
         slp_time = 0
 
-    return slp_time
+    return slp_time, prev_tr_uri
 
 def mainLoop():
 
@@ -115,7 +117,7 @@ def mainLoop():
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         while slp_time > 0:
-                            slp_time = calcSleep(sp, slp_time, prev_tr_uri)
+                            slp_time, prev_tr_uri = calcSleep(sp, slp_time, prev_tr_uri)
 
                     # If the song is not playing then inform the client console
                     elif (results["is_playing"] == False):
@@ -134,7 +136,7 @@ def mainLoop():
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         while slp_time > 0:
-                            slp_time = calcSleep(sp, slp_time, prev_tr_uri)
+                            slp_time, prev_tr_uri = calcSleep(sp, slp_time, prev_tr_uri)
 
                     # Otherwise, inform the client console that the user hasn't listened
                     # to at least half of the song.
@@ -145,7 +147,7 @@ def mainLoop():
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         while slp_time > 0:
-                            slp_time = calcSleep(sp, slp_time, prev_tr_uri)
+                            slp_time, prev_tr_uri = calcSleep(sp, slp_time, prev_tr_uri)
 
                 else:
                     print("No user currently logged in, sleeping for 60 seconds!")
