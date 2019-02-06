@@ -79,13 +79,11 @@ def mainLoop():
                         try:
                             tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                             status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                            # pprint.pprint(results["item"]["artists"][0])
-                            print(status)
+                            tweet_info = str("Tweet: " + status[6] + "\nTweet ID: " + status[3] + "\nTimestamp: " + status[0] + "\n")
+                            print(tweet_info)
                             with open(sys.argv[1], "a") as log:
                                 log.write("Sucessful Tweet!\n")
-                                log.write("Tweet: " + status["text"] + "\n")
-                                log.write("Tweet ID: " + status["id_str"] + "\n")
-                                log.write("Timestamp: " + status["created_at"] + "\n")
+                                log.write(tweet_info)
                                 log.write("--------------------------------------------------------------------------\n")
                             prev_tr_uri = cur_tr_uri
 
@@ -141,7 +139,7 @@ try:
     mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
-        currTime = datetime.datetimen.now()
+        currTime = datetime.datetime.now()
         tb = sys.exe_info()
         log.write("[{}]An Error has occured!: {}\n".format(str(currTime), repr(e)))
         traceback.print_tb(tb[2], file=log)
