@@ -12,6 +12,7 @@ Takes current user listening data and creates and tweets out the song, artist, a
 ## Changelog
 - 1/5/2019
    - Reverting previous changes, linked too many incorrect accounts
+   
 - 1/4/2019
    - *NEW* If the artist has a verified twitter account, the bot will now link the artists' account as well (For now the query is limited to the first 5 results from twitter) (Sorry unverified artists :( )
 

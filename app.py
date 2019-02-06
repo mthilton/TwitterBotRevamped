@@ -94,6 +94,7 @@ def mainLoop():
                             print(err)
 
                         slp_time = (tr_len - cur_tr_prog) / 1000
+                        slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         time.sleep(slp_time)
 
@@ -110,6 +111,8 @@ def mainLoop():
                         slp_time = (tr_len - cur_tr_prog) / 1000
                         if slp_time < 1:
                             slp_time = 2
+
+                        slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         time.sleep(slp_time)
 
@@ -117,8 +120,9 @@ def mainLoop():
                     # to at least half of the song.
                     else:
                         print("Have not listened to enough of the song!")
-                        hwp = tr_len/2
+                        hwp = (3 * tr_len)/4
                         slp_time = (hwp - cur_tr_prog) / 1000
+                        slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
                         time.sleep(slp_time)
 
