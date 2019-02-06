@@ -140,6 +140,7 @@ def mainLoop():
                     # Otherwise, inform the client console that the user hasn't listened
                     # to at least half of the song.
                     else:
+                        prev_tr_uri = cur_tr_uri
                         print("Have not listened to enough of the song!")
                         hwp = (3 * tr_len)/4
                         slp_time = (hwp - cur_tr_prog) / 1000
