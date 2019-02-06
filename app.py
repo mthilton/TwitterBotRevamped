@@ -30,6 +30,7 @@ def calcSleep(sp, slp_time, prev_tr_uri):
         time.sleep(5)
         if (cur_tr_uri != prev_tr_uri):
             print("Awoken Early!")
+            print(cur_tr_uri + "vs" + prev_tr_uri)
             slp_time = 0
         else:
             slp_time -= 5
