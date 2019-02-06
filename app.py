@@ -140,7 +140,7 @@ try:
 except Exception as e:
     with open(sys.argv[1], "a") as log:
         currTime = datetime.datetime.now()
-        tb = sys.exe_info()
+        tb = sys.exc_info()
         log.write("[{}]An Error has occured!: {}\n".format(str(currTime), repr(e)))
         traceback.print_tb(tb[2], file=log)
         log.write("--------------------------END LOGFILE--------------------------\n")
