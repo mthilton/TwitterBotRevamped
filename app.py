@@ -31,7 +31,7 @@ def calcSleep(slp_time, prev_track_uri):
         if (cur_tr_uri != prev_tr_uri):
             print("Awoken Early!")
             slp_time = 0
-        else
+        else:
             slp_time -= 5
     else:
         time.sleep(math.ceil(cur_tr_prog/1000))
