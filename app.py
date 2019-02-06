@@ -80,7 +80,7 @@ def mainLoop():
                             tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                             status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
                             print(type(status))
-                            tweet_info = str("Tweet: " + status[6] + "\nTweet ID: " + status[3] + "\nTimestamp: " + status[0] + "\n")
+                            tweet_info = str("Tweet: " + status.text + "\nTweet ID: " + status.id_str + "\nTimestamp: " + status.created_at + "\n")
                             print(tweet_info)
                             with open(sys.argv[1], "a") as log:
                                 log.write("Sucessful Tweet!\n")
