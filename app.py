@@ -26,12 +26,11 @@ def calcSleep(sp, slp_time, prev_tr_uri):
     results = sp.current_user_playing_track()
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
-    print(cur_tr_uri + " vs " + prev_tr_uri)
 
     if (cur_tr_uri == prev_tr_uri):
-        if ((cur_tr_prog/1000) > 5):
-            time.sleep(5)
-            slp_time -= 5
+        if ((cur_tr_prog/1000) > 10):
+            time.sleep(10)
+            slp_time -= 10
         else:
             time.sleep(math.ceil(cur_tr_prog/1000))
             slp_time = 0
