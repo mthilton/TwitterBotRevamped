@@ -12,7 +12,7 @@ from twitter_functions import twitter_functions as twitfunc
 try:
     testfile = open(sys.argv[1],"r")
 except IOError:
-    print("Invalid Log File!\n Usage: ./app.py <logfile>")
+    print("Invalid Log File!\nUsage: ./app.py <logfile>")
     raise
 
 testfile.close()
@@ -21,6 +21,23 @@ testfile.close()
 
 def grabFromPayload(results):
     return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
+
+def calcSleep(slp_time, prev_track_uri):
+    results = sp.current_user_playing_track()
+    tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
+
+    if ((cur_tr_prog/1000) > 5):
+        time.sleep(5)
+        if (cur_tr_uri != prev_tr_uri):
+            print("Awoken Early!")
+            slp_time = 0
+        else
+            slp_time -= 5
+    else:
+        time.sleep(math.ceil(cur_tr_prog/1000))
+        slp_time = 0
+
+    return slp_time
 
 def mainLoop():
 
@@ -79,7 +96,6 @@ def mainLoop():
                         try:
                             tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                             status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                            print(type(status))
                             tweet_info = str("Tweet: " + status.text + "\nTweet ID: " + status.id_str + "\nTimestamp: " + status.created_at + "\n")
                             print(tweet_info)
                             with open(sys.argv[1], "a") as log:
@@ -97,7 +113,8 @@ def mainLoop():
                         slp_time = (tr_len - cur_tr_prog) / 1000
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
-                        time.sleep(slp_time)
+                        while slp_time > 0:
+                            slp_time = calcSleep(slp_time, prev_tr_uri)
 
                     # If the song is not playing then inform the client console
                     elif (results["is_playing"] == False):
@@ -115,7 +132,8 @@ def mainLoop():
 
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
-                        time.sleep(slp_time)
+                        while slp_time > 0:
+                            slp_time = calcSleep(slp_time, prev_tr_uri)
 
                     # Otherwise, inform the client console that the user hasn't listened
                     # to at least half of the song.
@@ -125,7 +143,8 @@ def mainLoop():
                         slp_time = (hwp - cur_tr_prog) / 1000
                         slp_time = math.ceil(slp_time)
                         print("Sleeping for {} seconds!".format(slp_time))
-                        time.sleep(slp_time)
+                        while slp_time > 0:
+                            slp_time = calcSleep(slp_time, prev_tr_uri)
 
                 else:
                     print("No user currently logged in, sleeping for 60 seconds!")
@@ -145,4 +164,4 @@ except Exception as e:
         log.write("[{}]An Error has occured!: {}\n".format(str(currTime), repr(e)))
         traceback.print_tb(tb[2], file=log)
         log.write("--------------------------END LOGFILE--------------------------\n")
-        raise
+    raise
