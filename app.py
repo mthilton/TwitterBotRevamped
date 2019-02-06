@@ -22,7 +22,7 @@ testfile.close()
 def grabFromPayload(results):
     return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
 
-def calcSleep(sp, slp_time, prev_track_uri):
+def calcSleep(sp, slp_time, prev_tr_uri):
     results = sp.current_user_playing_track()
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
