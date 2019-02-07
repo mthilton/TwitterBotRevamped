@@ -163,7 +163,7 @@ def mainLoop():
 
 
 try:
-    t = mainLoop(t)
+    mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
         currTime = datetime.datetime.now()
