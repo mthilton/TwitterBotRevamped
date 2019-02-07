@@ -41,7 +41,7 @@ def refeshSpotifyToken(env):
         exit()
 
 
-def calcSleep(slp_time, prev_tr_uri):
+def calcSleep(env, slp_time, prev_tr_uri):
 
     results = refeshSpotifyToken(env)
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
@@ -123,7 +123,7 @@ def mainLoop():
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(slp_time, prev_tr_uri)
+                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
 
             # If the song is not playing then inform the client console
             elif (results["is_playing"] == False):
@@ -142,7 +142,7 @@ def mainLoop():
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(slp_time, prev_tr_uri)
+                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
@@ -154,7 +154,7 @@ def mainLoop():
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(slp_time, prev_tr_uri)
+                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
 
         else:
             print("No user currently logged in, sleeping for 60 seconds!")
