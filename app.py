@@ -22,13 +22,13 @@ testfile.close()
 def grabFromPayload(results):
     return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
 
-def refeshSpotifyToken():
+def refeshSpotifyToken(env):
     scope = 'user-read-currently-playing'
-    token = util.prompt_for_user_token(username=e.spot_username,
+    token = util.prompt_for_user_token(username=env.spot_username,
                                         scope=scope,
-                                        client_id=e.spot_client_id,
-                                        client_secret= e.spot_client_secret,
-                                        redirect_uri=e.spot_redirect_uri)
+                                        client_id=env.spot_client_id,
+                                        client_secret= env.spot_client_secret,
+                                        redirect_uri=env.spot_redirect_uri)
 
     # On success grab the current user playing track
     if token:
@@ -43,7 +43,7 @@ def refeshSpotifyToken():
 
 def calcSleep(slp_time, prev_tr_uri):
 
-    results = refeshSpotifyToken()
+    results = refeshSpotifyToken(env)
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
     if (cur_tr_uri == prev_tr_uri):
@@ -63,7 +63,7 @@ def calcSleep(slp_time, prev_tr_uri):
 def mainLoop():
 
     # Creates an Authentication object that has all of the keys for twitter and spotify
-    e = enviorn()
+    env = enviorn()
     tf = twitfunc()
 
     cur_tr_uri = str()
@@ -75,13 +75,13 @@ def mainLoop():
         hwp = 0
 
         # Twitter Authentication
-        twit = twitter.Api(consumer_key=e.twit_consumer_key,
-                            consumer_secret=e.twit_consumer_secret,
-                            access_token_key=e.twit_access_token_key,
-                            access_token_secret=e.twit_access_token_secret)
+        twit = twitter.Api(consumer_key=env.twit_consumer_key,
+                            consumer_secret=env.twit_consumer_secret,
+                            access_token_key=env.twit_access_token_key,
+                            access_token_secret=env.twit_access_token_secret)
 
         # Spotify Authentication
-        results = refeshSpotifyToken()
+        results = refeshSpotifyToken(env)
 
         # Grab relavent information from the payload if there are results
         if(results != None):
