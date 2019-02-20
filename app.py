@@ -47,21 +47,24 @@ def refeshSpotifyToken(env):
         exit()
 
 
-def calcSleep(env, slp_time, prev_tr_uri):
+def calcSleep(env, slp_time, ptu):
 
     results = refeshSpotifyToken(env)
 
     # Check For valid Spotify results
     if results is None:
-        return slp_time, prev_tr_uri
+        return slp_time, ptu
 
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
+
+    if (ptu == ""):
+        ptu = cur_tr_uri
 
     # If we have valid results then try to acuratly calculate the sleep time
 
     # If we are listening to the previous song, then check to see if there is
     # still at least 10 seconds of playback time
-    if (cur_tr_uri == prev_tr_uri):
+    if (cur_tr_uri == ptu):
 
         # If there is more than 10 seconds of playback time then sleep for 10 seconds
         if ((cur_tr_prog/1000) > 10):
@@ -77,10 +80,10 @@ def calcSleep(env, slp_time, prev_tr_uri):
     # by setting sleep time to 0, forcing it to re analyze current song.
     else:
         print("Awoken Early!\n")
-        prev_tr_uri = cur_tr_uri
+        ptu = cur_tr_uri
         slp_time = 0
 
-    return slp_time, prev_tr_uri
+    return slp_time, ptu
 
 def mainLoop():
 
@@ -90,6 +93,7 @@ def mainLoop():
 
     cur_tr_uri = str()
     prev_tr_uri = str()
+    ptu = str()
 
     while True:
 
@@ -145,7 +149,7 @@ def mainLoop():
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                    slp_time, ptu = calcSleep(env, slp_time, ptu)
 
             # If the song is not playing then inform the client console
             elif (results["is_playing"] == False):
@@ -164,7 +168,7 @@ def mainLoop():
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                    slp_time, ptu = calcSleep(env, slp_time, ptu)
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
@@ -176,7 +180,7 @@ def mainLoop():
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                    slp_time, ptu = calcSleep(env, slp_time, ptu)
                 print("[DEBUG] Left the song timeout portion of the code. \n Sleep Time: {} \n Current Track URI: {} \n Previous Track URI: {}".format(slp_time, cur_tr_uri, prev_tr_uri))
 
         else:
