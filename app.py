@@ -150,6 +150,7 @@ def mainLoop():
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
                     slp_time, ptu = calcSleep(env, slp_time, ptu)
+                ptu = ""
 
             # If the song is not playing then inform the client console
             elif (results["is_playing"] == False):
@@ -167,6 +168,7 @@ def mainLoop():
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
                     slp_time, ptu = calcSleep(env, slp_time, ptu)
+                ptu = ""
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
@@ -179,7 +181,8 @@ def mainLoop():
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
                     slp_time, ptu = calcSleep(env, slp_time, ptu)
-                    
+                ptu = ""
+
         else:
             print("No user currently logged in, sleeping for 60 seconds!")
             time.sleep(60)
