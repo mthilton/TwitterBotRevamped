@@ -179,7 +179,7 @@ def mainLoop():
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
-            else:
+            elif cur_tr_prog < (3 * tr_len)/4:
                 currTime = datetime.datetime.now()
                 currTime = currTime.strftime("%Y-%m-%d-%X")
                 print("[{}] Have not listened to enough of the song!".format(str(currTime)))
