@@ -73,7 +73,7 @@ def calcSleep(env, slp_time, ptu):
 
         # Otherwise sleep for the remainder of the song and set sleep time to 0
         else:
-            time.sleep(math.ceil(cur_tr_prog/1000))
+            time.sleep(slp_time)
             slp_time = 0
 
     # If we are not still listening to the previous song then tell the calling function
