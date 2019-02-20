@@ -125,7 +125,7 @@ def mainLoop():
             # half of its duration, and its not the previous track, then Tweet it out
             if (results["is_playing"] and
                 (3*tr_len)/4 < cur_tr_prog and
-                cur_tr_uri != prev_tr_uri):
+                cur_tr_uri == prev_tr_uri):
 
                 # Catching Twitter Error
                 try:
@@ -163,8 +163,6 @@ def mainLoop():
             elif (cur_tr_uri == prev_tr_uri):
                 print("The current song is still the previous song!")
                 slp_time = (tr_len - cur_tr_prog) / 1000
-                if slp_time < 1:
-                    slp_time = 2
 
                 slp_time = math.ceil(slp_time)
                 print("Sleeping for {} seconds!".format(slp_time))
@@ -187,8 +185,6 @@ def mainLoop():
         else:
             print("No user currently logged in, sleeping for 60 seconds!")
             time.sleep(60)
-
-
 
 try:
     mainLoop()
