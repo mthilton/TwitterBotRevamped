@@ -133,7 +133,6 @@ def mainLoop():
                     status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
                     tweet_info = str("Tweet: " + status.text + "\nTweet ID: " + status.id_str + "\nTimestamp: " + status.created_at + "\n")
                     print("Sucessful Tweet!\n" + tweet_info + "--------------------------------------------------------------------------\n")
-                    print(tweet_info)
                     with open(sys.argv[1], "a") as log:
                         log.write("Sucessful Tweet!\n")
                         log.write(tweet_info)
@@ -180,8 +179,7 @@ def mainLoop():
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
                     slp_time, ptu = calcSleep(env, slp_time, ptu)
-                print("[DEBUG] Left the song timeout portion of the code. \n Sleep Time: {} \n Current Track URI: {} \n Previous Track URI: {}".format(slp_time, cur_tr_uri, prev_tr_uri))
-
+                    
         else:
             print("No user currently logged in, sleeping for 60 seconds!")
             time.sleep(60)
