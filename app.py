@@ -20,6 +20,12 @@ testfile.close()
 # Functions
 
 def grabFromPayload(results):
+
+    # Check to see if results are None
+    if results is None:
+        return None
+
+    # If there is proper data then return the proper information
     return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
 
 def refeshSpotifyToken(env):
@@ -44,15 +50,31 @@ def refeshSpotifyToken(env):
 def calcSleep(env, slp_time, prev_tr_uri):
 
     results = refeshSpotifyToken(env)
+
+    # Check For valid Spotify results
+    if results is None:
+        return slp_time, prev_tr_uri
+
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
+    # If we have valid results then try to acuratly calculate the sleep time
+
+    # If we are listening to the previous song, then check to see if there is
+    # still at least 10 seconds of playback time
     if (cur_tr_uri == prev_tr_uri):
+
+        # If there is more than 10 seconds of playback time then sleep for 10 seconds
         if ((cur_tr_prog/1000) > 10):
             time.sleep(10)
             slp_time -= 10
+
+        # Otherwise sleep for the remainder of the song and set sleep time to 0
         else:
             time.sleep(math.ceil(cur_tr_prog/1000))
             slp_time = 0
+
+    # If we are not still listening to the previous song then tell the calling function
+    # by setting sleep time to 0, forcing it to re analyze current song.
     else:
         print("Awoken Early!\n")
         prev_tr_uri = cur_tr_uri
@@ -84,7 +106,7 @@ def mainLoop():
         results = refeshSpotifyToken(env)
 
         # Grab relavent information from the payload if there are results
-        if(results != None):
+        if results is not None:
 
             artist_query = []
             tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
