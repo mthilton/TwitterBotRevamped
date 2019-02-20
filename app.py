@@ -57,17 +57,17 @@ def calcSleep(env, slp_time, ptu):
 
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
-    if (ptu == ""):
+    if ptu == "":
         ptu = cur_tr_uri
 
     # If we have valid results then try to acuratly calculate the sleep time
 
     # If we are listening to the previous song, then check to see if there is
     # still at least 10 seconds of playback time
-    if (cur_tr_uri == ptu):
+    if cur_tr_uri == ptu:
 
         # If there is more than 10 seconds of playback time then sleep for 10 seconds
-        if ((cur_tr_prog/1000) > 10):
+        if (tr_len - cur_tr_prog) / 1000 > 10:
             time.sleep(10)
             slp_time -= 10
 
@@ -132,6 +132,7 @@ def mainLoop():
                     tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                     status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
                     tweet_info = str("Tweet: " + status.text + "\nTweet ID: " + status.id_str + "\nTimestamp: " + status.created_at + "\n")
+                    print("Sucessful Tweet!\n" + tweet_info + "--------------------------------------------------------------------------\n")
                     print(tweet_info)
                     with open(sys.argv[1], "a") as log:
                         log.write("Sucessful Tweet!\n")
