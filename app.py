@@ -131,12 +131,12 @@ def mainLoop():
                 try:
                     tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                     status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                    tweet_info = str("\033[34mTweet: \033[0;37;40m" + status.text + "\n\033[33mTweet ID: \033[0;37;40m" + status.id_str + "\n\033[31mTimestamp: \033[0;37;40m" + status.created_at + "\n")
-                    print("\033[32mSucessful Tweet!\033[0;37;40m\n" + tweet_info + "--------------------------------------------------------------------------\n")
+                    tweet_info = str("\033[34mTweet: \033[0;37;40m\n" + status.text + "\n\033[33mTweet ID: \033[0;37;40m" + status.id_str + "\n\033[31mTimestamp: \033[0;37;40m" + status.created_at + "\n")
+                    print( "\033[32m--------------------------------------------------------------------------\nSucessful Tweet!\033[0;37;40m\n" + tweet_info)
                     with open(sys.argv[1], "a") as log:
+                        log.write("--------------------------------------------------------------------------\n")
                         log.write("Sucessful Tweet!\n")
                         log.write(tweet_info)
-                        log.write("--------------------------------------------------------------------------\n")
                     prev_tr_uri = cur_tr_uri
 
                 except twitter.error.TwitterError as err:
