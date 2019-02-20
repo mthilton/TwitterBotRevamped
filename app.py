@@ -131,8 +131,8 @@ def mainLoop():
                 try:
                     tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                     status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                    tweet_info = str("Tweet: " + status.text + "\nTweet ID: " + status.id_str + "\nTimestamp: " + status.created_at + "\n")
-                    print("\033[2;32;40mSucessful Tweet!\033[0;37;40m\n" + tweet_info + "--------------------------------------------------------------------------\n")
+                    tweet_info = str("\033[34mTweet: \033[0;37;40m" + status.text + "\n\033[33mTweet ID: \033[0;37;40m" + status.id_str + "\n\033[31mTimestamp: \033[0;37;40m" + status.created_at + "\n")
+                    print("\033[32mSucessful Tweet!\033[0;37;40m\n" + tweet_info + "--------------------------------------------------------------------------\n")
                     with open(sys.argv[1], "a") as log:
                         log.write("Sucessful Tweet!\n")
                         log.write(tweet_info)
@@ -154,9 +154,12 @@ def mainLoop():
 
             # If the song is not playing then inform the client console
             elif (results["is_playing"] == False):
-                print("Not currently playing anything!")
-                print("Sleeping for 20 seconds!")
-                time.sleep(20)
+                print("Not currently playing anything, waiting for playback to resume!")
+                while results["is_playing"] == False:
+                    time.sleep(10)
+                    results = refeshSpotifyToken(env)
+                    if results is None:
+                        break
 
             # If the current song uri is equal to the previous song uri, then
             # Inform the client console
@@ -184,8 +187,10 @@ def mainLoop():
                 ptu = ""
 
         else:
-            print("No user currently logged in, sleeping for 60 seconds!")
-            time.sleep(60)
+            print("No user currently logged in, sleeping until somebody logs in!")
+            while results is None:
+                results = refeshSpotifyToken(env)
+                time.sleep(10)
 
 try:
     mainLoop()
