@@ -155,6 +155,7 @@ def mainLoop():
             # If the song is not playing then inform the client console
             elif (results["is_playing"] == False):
                 currTime = datetime.datetime.now()
+                currTime = currTime.strftime("%Y-%B-%d-%X")
                 print("[{}] Not currently playing anything, waiting for playback to resume!".format(str(currTime)))
                 while results["is_playing"] == False:
                     time.sleep(10)
@@ -166,6 +167,7 @@ def mainLoop():
             # Inform the client console
             elif (cur_tr_uri == prev_tr_uri):
                 currTime = datetime.datetime.now()
+                currTime = currTime.strftime("%Y-%B-%d-%X")
                 print("[{}] The current song is still the previous song!".format(str(currTime)))
                 slp_time = (tr_len - cur_tr_prog) / 1000
 
@@ -179,6 +181,7 @@ def mainLoop():
             # to at least half of the song.
             else:
                 currTime = datetime.datetime.now()
+                currTime = currTime.strftime("%Y-%B-%d-%X")
                 print("[{}] Have not listened to enough of the song!".format(str(currTime)))
                 hwp = (3 * tr_len)/4
                 slp_time = (hwp - cur_tr_prog) / 1000
