@@ -177,6 +177,7 @@ def mainLoop():
                 print("Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
                     slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                print("[DEBUG] Left the song timeout portion of the code. \n Sleep Time: {} \n Current Track URI: {} \n Previous Track URI: {}".format(slp_time).format(cur_tr_uri).format(prev_tr_uri))
 
         else:
             print("No user currently logged in, sleeping for 60 seconds!")
