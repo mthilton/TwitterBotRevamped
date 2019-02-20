@@ -120,7 +120,7 @@ def mainLoop():
             # If the song is currently playing, its been playing for longer than
             # half of its duration, and its not the previous track, then Tweet it out
             if (results["is_playing"] and
-                3tr_len/4 < cur_tr_prog and
+                (3*tr_len)/4 < cur_tr_prog and
                 cur_tr_uri != prev_tr_uri):
 
                 # Catching Twitter Error
