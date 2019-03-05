@@ -20,6 +20,12 @@ testfile.close()
 # Functions
 
 def grabFromPayload(results):
+
+    # Check to see if results are None
+    if results is None:
+        return None
+
+    # If there is proper data then return the proper information
     return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
 
 def refeshSpotifyToken(env):
@@ -41,24 +47,43 @@ def refeshSpotifyToken(env):
         exit()
 
 
-def calcSleep(env, slp_time, prev_tr_uri):
+def calcSleep(env, slp_time, ptu):
 
     results = refeshSpotifyToken(env)
+
+    # Check For valid Spotify results
+    if results is None:
+        return slp_time, ptu
+
     tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
 
-    if (cur_tr_uri == prev_tr_uri):
-        if ((cur_tr_prog/1000) > 10):
+    if ptu == "":
+        ptu = cur_tr_uri
+
+    # If we have valid results then try to acuratly calculate the sleep time
+
+    # If we are listening to the previous song, then check to see if there is
+    # still at least 10 seconds of playback time
+    if cur_tr_uri == ptu:
+
+        # If there is more than 10 seconds of playback time then sleep for 10 seconds
+        if slp_time > 10:
             time.sleep(10)
             slp_time -= 10
+
+        # Otherwise sleep for the remainder of the song and set sleep time to 0
         else:
-            time.sleep(math.ceil(cur_tr_prog/1000))
+            time.sleep(slp_time)
             slp_time = 0
+
+    # If we are not still listening to the previous song then tell the calling function
+    # by setting sleep time to 0, forcing it to re analyze current song.
     else:
         print("Awoken Early!\n")
-        prev_tr_uri = cur_tr_uri
+        ptu = cur_tr_uri
         slp_time = 0
 
-    return slp_time, prev_tr_uri
+    return slp_time, ptu
 
 def mainLoop():
 
@@ -68,6 +93,7 @@ def mainLoop():
 
     cur_tr_uri = str()
     prev_tr_uri = str()
+    ptu = str()
 
     while True:
 
@@ -84,7 +110,7 @@ def mainLoop():
         results = refeshSpotifyToken(env)
 
         # Grab relavent information from the payload if there are results
-        if(results != None):
+        if results is not None:
 
             artist_query = []
             tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
@@ -98,19 +124,19 @@ def mainLoop():
             # If the song is currently playing, its been playing for longer than
             # half of its duration, and its not the previous track, then Tweet it out
             if (results["is_playing"] and
-                tr_len/2 < cur_tr_prog and
-                cur_tr_uri != prev_tr_uri):
+                (3*tr_len)/4 < cur_tr_prog and
+                cur_tr_uri == prev_tr_uri):
 
                 # Catching Twitter Error
                 try:
                     tr_artist = tf.lookup_user(twit = twit, query = artist_query)
                     status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
-                    tweet_info = str("Tweet: " + status.text + "\nTweet ID: " + status.id_str + "\nTimestamp: " + status.created_at + "\n")
-                    print(tweet_info)
+                    tweet_info = str("\033[34mTweet: \u001b[0m\n" + status.text + "\n\033[33mTweet ID: \u001b[0m" + status.id_str + "\n\033[31mTimestamp: \u001b[0m" + status.created_at + "\n")
+                    print( "--------------------------------------------------------------------------\n\033[32mSucessful Tweet!\u001b[0m\n" + tweet_info + "--------------------------------------------------------------------------")
                     with open(sys.argv[1], "a") as log:
+                        log.write("---------------------------------------------------------------------------\n")
                         log.write("Sucessful Tweet!\n")
                         log.write(tweet_info)
-                        log.write("--------------------------------------------------------------------------\n")
                     prev_tr_uri = cur_tr_uri
 
                 except twitter.error.TwitterError as err:
@@ -121,54 +147,68 @@ def mainLoop():
 
                 slp_time = (tr_len - cur_tr_prog) / 1000
                 slp_time = math.ceil(slp_time)
-                print("Sleeping for {} seconds!".format(slp_time))
+                print("   Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                    slp_time, ptu = calcSleep(env, slp_time, ptu)
+                ptu = ""
 
             # If the song is not playing then inform the client console
             elif (results["is_playing"] == False):
-                print("Not currently playing anything!")
-                print("Sleeping for 20 seconds!")
-                time.sleep(20)
+                currTime = datetime.datetime.now()
+                currTime = currTime.strftime("%Y-%m-%d-%X")
+                print("[{}] Not currently playing anything, waiting for playback to resume!".format(str(currTime)))
+                while results["is_playing"] == False:
+                    time.sleep(10)
+                    results = refeshSpotifyToken(env)
+                    if results is None:
+                        break
 
             # If the current song uri is equal to the previous song uri, then
             # Inform the client console
             elif (cur_tr_uri == prev_tr_uri):
-                print("The current song is still the previous song!")
+                currTime = datetime.datetime.now()
+                currTime = currTime.strftime("%Y-%m-%d-%X")
+                print("[{}] The current song is still the previous song!".format(str(currTime)))
                 slp_time = (tr_len - cur_tr_prog) / 1000
-                if slp_time < 1:
-                    slp_time = 2
 
                 slp_time = math.ceil(slp_time)
-                print("Sleeping for {} seconds!".format(slp_time))
+                print("   Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                    slp_time, ptu = calcSleep(env, slp_time, ptu)
+                ptu = ""
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
             else:
                 prev_tr_uri = cur_tr_uri
-                print("Have not listened to enough of the song!")
+                currTime = datetime.datetime.now()
+                currTime = currTime.strftime("%Y-%m-%d-%X")
+                print("[{}] Have not listened to enough of the song!".format(str(currTime)))
                 hwp = (3 * tr_len)/4
                 slp_time = (hwp - cur_tr_prog) / 1000
                 slp_time = math.ceil(slp_time)
-                print("Sleeping for {} seconds!".format(slp_time))
+                print("   Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, prev_tr_uri = calcSleep(env, slp_time, prev_tr_uri)
+                    slp_time, ptu = calcSleep(env, slp_time, ptu)
+                ptu = ""
 
         else:
-            print("No user currently logged in, sleeping for 60 seconds!")
-            time.sleep(60)
-
-
+            currTime = datetime.datetime.now()
+            currTime = currTime.strftime("%Y-%m-%d-%X")
+            print("[{}] No user currently logged in, sleeping until somebody logs in!".format(str(currTime)))
+            while results is None:
+                results = refeshSpotifyToken(env)
+                time.sleep(10)
 
 try:
     mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
         currTime = datetime.datetime.now()
+        currTime = currTime.strftime("%Y-%m-%d-%X")
         tb = sys.exc_info()
-        log.write("[{}]An Error has occured!: {}\n".format(str(currTime), repr(e)))
+        log.write("---------------------------------------------------------------------------\n")
+        log.write("[{}] An Error has occured!: {}\n".format(str(currTime), repr(e)))
         traceback.print_tb(tb[2], file=log)
-        log.write("--------------------------END LOGFILE--------------------------\n")
+        log.write("--------------------------------END LOGFILE--------------------------------\n")
     raise
