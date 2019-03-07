@@ -66,10 +66,10 @@ def calcSleep(env, slp_time, ptu):
     # still at least 10 seconds of playback time
     if cur_tr_uri == ptu:
 
-        # If there is more than 10 seconds of playback time then sleep for 10 seconds
-        if slp_time > 10:
-            time.sleep(10)
-            slp_time -= 10
+        # If there is more than 20 seconds of playback time then sleep for 10 seconds
+        if slp_time > 20:
+            time.sleep(20)
+            slp_time -= 20
 
         # Otherwise sleep for the remainder of the song and set sleep time to 0
         else:
