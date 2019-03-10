@@ -13,4 +13,8 @@ class env:
         self.spot_client_id = keys[5].strip()
         self.spot_client_secret = keys[6].strip()
         self.spot_redirect_uri = keys[7].strip()
+        self.mysql_host = keys[8].strip()
+        self.mysql_user = keys[9].strip()
+        self.mysql_pw = keys[10].strip()
+        self.mysql_db = keys[11].strip()
         keys_file.close()
