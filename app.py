@@ -22,7 +22,6 @@ testfile.close()
 
 def calcSleep(env, sp, slp_time, ptu):
 
-    print("Entering Calc Sleep, Current sleep time is {}!".format(slp_time))
     sp.update_obj(env)
 
     # Check For valid Spotify results
@@ -42,7 +41,6 @@ def calcSleep(env, sp, slp_time, ptu):
         if slp_time > 10:
             time.sleep(10)
             slp_time -= 10
-            print("Sleep timeout: 10s!")
 
         # Otherwise sleep for the remainder of the song and set sleep time to 0
         else:
