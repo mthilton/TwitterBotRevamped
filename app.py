@@ -22,10 +22,11 @@ testfile.close()
 
 def calcSleep(env, sp, slp_time, ptu):
 
-    sp.update_obj(env)
-
     # Check For valid Spotify results
-    if sp is None:
+    sp.update_obj(env)
+    past_hwp = False
+
+    if sp.sp_obj is None:
         return slp_time, ptu
 
     if ptu == "":
@@ -33,28 +34,50 @@ def calcSleep(env, sp, slp_time, ptu):
 
     # If we have valid results then try to acuratly calculate the sleep time
 
-    # If we are listening to the previous song, then check to see if there is
-    # still at least 10 seconds of playback time
-    if sp.ct_uri == ptu:
-
-        # If there is more than 10 seconds of playback time then sleep for 10 seconds
-        if slp_time > 10:
-            time.sleep(10)
-            slp_time -= 10
-
-        # Otherwise sleep for the remainder of the song and set sleep time to 0
-        else:
-            time.sleep(slp_time)
-            slp_time = 0
+    # If the track is paused but the song is still the same song, then set sleep to 0
+    # and alert the calling function
+    if not sp.ct_is_playing and sp.ct_uri == ptu:
+        print("Playback Paused!")
+        past_hwp = True
+        sp.tweeted = False
+        slp_time = 0
 
     # If we are not still listening to the previous song then tell the calling function
     # by setting sleep time to 0, forcing it to re analyze current song.
-    else:
-        print("Awoken Early!\n")
+    elif sp.ct_uri != ptu:
+        print("Awoken Early!")
         ptu = sp.ct_uri
+        sp.tweeted = False
+        past_hwp = True
         slp_time = 0
 
-    return slp_time, ptu
+    # If we are listening to the previous song, then check to see if there is
+    # still at least 10 seconds of playback time
+    else:
+
+        hwp = (3*sp.ct_length)/4
+
+        if not sp.tweeted:
+            # If there is more than 10 seconds of playback time then sleep for 10 seconds
+            if slp_time > 10 and slp_time + sp.ct_progress < hwp:
+                time.sleep(10)
+                sp.update_obj(env)
+                slp_time = (hwp - sp.ct_progress) / 1000
+                slp_time = math.ceil(slp_time)
+                past_hwp = False
+
+            elif slp_time + sp.ct_progress > hwp:
+                slp_time = 0
+                past_hwp = True
+
+        else:
+            time.sleep(10)
+            sp.update_obj(env)
+            slp_time = (sp.ct_length - sp.ct_progress) / 1000
+            slp_time = math.ceil(slp_time)
+            past_hwp = True
+
+    return slp_time, ptu, past_hwp
 
 def mainLoop():
 
@@ -85,7 +108,7 @@ def mainLoop():
 
             # If the song is currently playing, its been playing for longer than
             # half of its duration, and its not the previous track, then Tweet it out
-            if sp.ct_is_playing and (3*sp.ct_length)/4 < sp.ct_progress and sp.ct_uri == prev_tr_uri:
+            if sp.ct_is_playing and (3*sp.ct_length)/4 < sp.ct_progress and not sp.tweeted and sp.ct_uri == prev_tr_uri:
 
                 # Catching Twitter Error
                 try:
@@ -98,19 +121,14 @@ def mainLoop():
                         log.write("Sucessful Tweet!\n")
                         log.write(tweet_info)
                     prev_tr_uri = sp.ct_uri
+                    sp.ct_artists_list = []
+                    sp.tweeted = True
 
                 except twitter.error.TwitterError as err:
                     print("This song has already been tweeted!\n" + repr(err))
 
                 except twitfunc.InvalidTwitterAuthError as err:
                     print(err)
-
-                slp_time = (sp.ct_length - sp.ct_progress) / 1000
-                slp_time = math.ceil(slp_time)
-                print("   Sleeping for {} seconds!".format(slp_time))
-                while slp_time > 0:
-                    slp_time, ptu = calcSleep(env, sp, slp_time, ptu)
-                ptu = ""
 
             # If the song is not playing then inform the client console
             elif not sp.ct_is_playing:
@@ -133,14 +151,21 @@ def mainLoop():
 
                 slp_time = math.ceil(slp_time)
                 print("   Sleeping for {} seconds!".format(slp_time))
-                while slp_time > 0:
-                    slp_time, ptu = calcSleep(env, sp, slp_time, ptu)
+                if not sp.tweeted:
+                    while slp_time > 0:
+                        slp_time, ptu, past = calcSleep(env, sp, slp_time, ptu)
+                    sp.tweeted = False
+                else:
+                    while slp_time > 0:
+                        slp_time, ptu, past = calcSleep(env, sp, slp_time, ptu)
+                    sp.tweeted = True
                 ptu = ""
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
             else:
                 prev_tr_uri = sp.ct_uri
+                sp.tweeted = False
                 currTime = datetime.datetime.now()
                 currTime = currTime.strftime("%Y-%m-%d-%X")
                 print("[{}] Have not listened to enough of the song!".format(str(currTime)))
@@ -148,8 +173,9 @@ def mainLoop():
                 slp_time = (hwp - sp.ct_progress) / 1000
                 slp_time = math.ceil(slp_time)
                 print("   Sleeping for {} seconds!".format(slp_time))
-                while slp_time > 0:
-                    slp_time, ptu = calcSleep(env, sp, slp_time, ptu)
+                past = False
+                while not past:
+                    slp_time, ptu, past = calcSleep(env, sp, slp_time, ptu)
                 ptu = ""
 
         else:

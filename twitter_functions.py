@@ -41,6 +41,8 @@ class twitter_functions:
 
         # For every string in the query list send a search request to twitter
         # It will search for users based on the passed string.
+        print(len(query))
+        print(query)
         for artist in query:
             query_results = twit.GetUsersSearch(term=artist,
                                                 count=5)
