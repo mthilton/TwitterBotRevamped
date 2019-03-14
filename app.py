@@ -37,7 +37,7 @@ def calcSleep(env, sp, slp_time, ptu):
     # still at least 10 seconds of playback time
     if sp.ct_uri == ptu:
 
-        # If there is more than 20 seconds of playback time then sleep for 10 seconds
+        # If there is more than 10 seconds of playback time then sleep for 10 seconds
         if slp_time > 10:
             time.sleep(10)
             slp_time -= 10
