@@ -5,6 +5,7 @@ import datetime, traceback
 import spotipy.util as util
 
 sys.path.append('../')
+from sp_utils import *
 from env import env as enviorn
 from twitter_functions import twitter_functions as twitfunc
 
@@ -19,57 +20,29 @@ testfile.close()
 
 # Functions
 
-def grabFromPayload(results):
+def calcSleep(env, sp, slp_time, ptu):
 
-    # Check to see if results are None
-    if results is None:
-        return None
-
-    # If there is proper data then return the proper information
-    return results["item"]["name"], results["item"]["external_urls"]["spotify"], results["progress_ms"], results["item"]["duration_ms"], results["item"]["uri"]
-
-def refeshSpotifyToken(env):
-    scope = 'user-read-currently-playing'
-    token = util.prompt_for_user_token(username=env.spot_username,
-                                        scope=scope,
-                                        client_id=env.spot_client_id,
-                                        client_secret= env.spot_client_secret,
-                                        redirect_uri=env.spot_redirect_uri)
-
-    # On success grab the current user playing track
-    if token:
-        sp = spotipy.Spotify(auth=token)
-        return sp.current_user_playing_track()
-
-    # Otherwise authentication failed and we will kill the program
-    else:
-        print ("Can't get token for " + e.spot_username)
-        exit()
-
-
-def calcSleep(env, slp_time, ptu):
-
-    results = refeshSpotifyToken(env)
+    print("Entering Calc Sleep, Current sleep time is {}!".format(slp_time))
+    sp.update_obj(env)
 
     # Check For valid Spotify results
-    if results is None:
+    if sp is None:
         return slp_time, ptu
 
-    tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
-
     if ptu == "":
-        ptu = cur_tr_uri
+        ptu = sp.ct_uri
 
     # If we have valid results then try to acuratly calculate the sleep time
 
     # If we are listening to the previous song, then check to see if there is
     # still at least 10 seconds of playback time
-    if cur_tr_uri == ptu:
+    if sp.ct_uri == ptu:
 
         # If there is more than 20 seconds of playback time then sleep for 10 seconds
-        if slp_time > 20:
-            time.sleep(20)
-            slp_time -= 20
+        if slp_time > 10:
+            time.sleep(10)
+            slp_time -= 10
+            print("Sleep timeout: 10s!")
 
         # Otherwise sleep for the remainder of the song and set sleep time to 0
         else:
@@ -80,7 +53,7 @@ def calcSleep(env, slp_time, ptu):
     # by setting sleep time to 0, forcing it to re analyze current song.
     else:
         print("Awoken Early!\n")
-        ptu = cur_tr_uri
+        ptu = sp.ct_uri
         slp_time = 0
 
     return slp_time, ptu
@@ -90,8 +63,8 @@ def mainLoop():
     # Creates an Authentication object that has all of the keys for twitter and spotify
     env = enviorn()
     tf = twitfunc()
+    sp = spot(env)
 
-    cur_tr_uri = str()
     prev_tr_uri = str()
     ptu = str()
 
@@ -107,29 +80,18 @@ def mainLoop():
                             access_token_secret=env.twit_access_token_secret)
 
         # Spotify Authentication
-        results = refeshSpotifyToken(env)
+        sp.update_obj(env)
 
         # Grab relavent information from the payload if there are results
-        if results is not None:
-
-            artist_query = []
-            tr_name, tr_link, cur_tr_prog, tr_len, cur_tr_uri = grabFromPayload(results)
-
-            # Fetching the Artists in on the song and putting them into a list
-            num_artists = len(results["item"]["artists"])
-
-            for i in range(num_artists):
-                artist_query.append(results["item"]["artists"][i]["name"])
+        if sp.sp_obj is not None:
 
             # If the song is currently playing, its been playing for longer than
             # half of its duration, and its not the previous track, then Tweet it out
-            if (results["is_playing"] and
-                (3*tr_len)/4 < cur_tr_prog and
-                cur_tr_uri == prev_tr_uri):
+            if sp.ct_is_playing and (3*sp.ct_length)/4 < sp.ct_progress and sp.ct_uri == prev_tr_uri:
 
                 # Catching Twitter Error
                 try:
-                    tr_artist = tf.lookup_user(twit = twit, query = artist_query)
+                    tr_artist = tf.lookup_user(twit = twit, query = sp.ct_artists_list)
                     status = twit.PostUpdate("Current Track: " + tr_name + "\nArtists: " + tr_artist + "\nListen now at: " + tr_link)
                     tweet_info = str("\033[34mTweet: \u001b[0m\n" + status.text + "\n\033[33mTweet ID: \u001b[0m" + status.id_str + "\n\033[31mTimestamp: \u001b[0m" + status.created_at + "\n")
                     print( "--------------------------------------------------------------------------\n\033[32mSucessful Tweet!\u001b[0m\n" + tweet_info + "--------------------------------------------------------------------------")
@@ -137,7 +99,7 @@ def mainLoop():
                         log.write("---------------------------------------------------------------------------\n")
                         log.write("Sucessful Tweet!\n")
                         log.write(tweet_info)
-                    prev_tr_uri = cur_tr_uri
+                    prev_tr_uri = sp.ct_uri
 
                 except twitter.error.TwitterError as err:
                     print("This song has already been tweeted!\n" + repr(err))
@@ -145,59 +107,59 @@ def mainLoop():
                 except twitfunc.InvalidTwitterAuthError as err:
                     print(err)
 
-                slp_time = (tr_len - cur_tr_prog) / 1000
+                slp_time = (sp.ct_length - sp.ct_progress) / 1000
                 slp_time = math.ceil(slp_time)
                 print("   Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, ptu = calcSleep(env, slp_time, ptu)
+                    slp_time, ptu = calcSleep(env, sp, slp_time, ptu)
                 ptu = ""
 
             # If the song is not playing then inform the client console
-            elif (results["is_playing"] == False):
+            elif not sp.ct_is_playing:
                 currTime = datetime.datetime.now()
                 currTime = currTime.strftime("%Y-%m-%d-%X")
                 print("[{}] Not currently playing anything, waiting for playback to resume!".format(str(currTime)))
-                while results["is_playing"] == False:
+                while not sp.ct_is_playing:
                     time.sleep(10)
-                    results = refeshSpotifyToken(env)
-                    if results is None:
+                    sp.update_obj(env)
+                    if sp.sp_obj is None:
                         break
 
             # If the current song uri is equal to the previous song uri, then
             # Inform the client console
-            elif (cur_tr_uri == prev_tr_uri):
+            elif sp.ct_uri == prev_tr_uri:
                 currTime = datetime.datetime.now()
                 currTime = currTime.strftime("%Y-%m-%d-%X")
                 print("[{}] The current song is still the previous song!".format(str(currTime)))
-                slp_time = (tr_len - cur_tr_prog) / 1000
+                slp_time = (sp.ct_length - sp.ct_progress) / 1000
 
                 slp_time = math.ceil(slp_time)
                 print("   Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, ptu = calcSleep(env, slp_time, ptu)
+                    slp_time, ptu = calcSleep(env, sp, slp_time, ptu)
                 ptu = ""
 
             # Otherwise, inform the client console that the user hasn't listened
             # to at least half of the song.
             else:
-                prev_tr_uri = cur_tr_uri
+                prev_tr_uri = sp.ct_uri
                 currTime = datetime.datetime.now()
                 currTime = currTime.strftime("%Y-%m-%d-%X")
                 print("[{}] Have not listened to enough of the song!".format(str(currTime)))
-                hwp = (3 * tr_len)/4
-                slp_time = (hwp - cur_tr_prog) / 1000
+                hwp = (3 * sp.ct_length)/4
+                slp_time = (hwp - sp.ct_progress) / 1000
                 slp_time = math.ceil(slp_time)
                 print("   Sleeping for {} seconds!".format(slp_time))
                 while slp_time > 0:
-                    slp_time, ptu = calcSleep(env, slp_time, ptu)
+                    slp_time, ptu = calcSleep(env, sp, slp_time, ptu)
                 ptu = ""
 
         else:
             currTime = datetime.datetime.now()
             currTime = currTime.strftime("%Y-%m-%d-%X")
             print("[{}] No user currently logged in, sleeping until somebody logs in!".format(str(currTime)))
-            while results is None:
-                results = refeshSpotifyToken(env)
+            while sp.sp_obj is None:
+                sp.update_obj(env)
                 time.sleep(10)
 
 try:
