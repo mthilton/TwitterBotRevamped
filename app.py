@@ -206,7 +206,7 @@ try:
         passwd=e.mysql_pw,
         database=e.mysql_db
     )
-    mainLoop(mydb)
+    mainLoop(e, mydb)
 except Exception as e:
     with open(sys.argv[1], "a") as log:
         currTime = get_curr_time()
