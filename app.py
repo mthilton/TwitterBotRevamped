@@ -61,6 +61,8 @@ def update_db(sp, mydb = None):
     if mydb is None:
         return
 
+    mycursor = mydb.cursor()
+
     sql = "INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"
     val = (sp.ct_uri, sp.ct_name, list(sp.ct_artist_uri.keys())[0], sp.ct_artists, sp.ct_num_artists, 1, 1)
     mycursor.execute(sql, val)
