@@ -142,7 +142,7 @@ def mainLoop(e, mydb = None):
         # Tweet Song
         elif state == 3 and sp.sp_obj is not None:
             tweet_song(sp, tf, twit, state)
-            update_db(mydb, sp)
+            update_db(sp, mydb)
             prev_tr_uri = sp.ct_uri
             state = 4
             printed = False
