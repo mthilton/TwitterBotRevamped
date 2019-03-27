@@ -73,10 +73,9 @@ def update_db(sp, mydb = None):
 
 
 # Infinite loop that Initalizing everything, including state machine
-def mainLoop(mydb = None):
+def mainLoop(e, mydb = None):
 
     # Setting up Enviornment IE: Keys, and needed objs
-    e = env()
     tf = twitfunc()
     sp = spot(e)
     prev_tr_uri = str()
@@ -200,6 +199,7 @@ testfile.close()
 
 # Enables Proper Logging of the program
 try:
+    e = env()
     mydb = mysql.connector.connect(
         host=e.mysql_host,
         user=e.mysql_user,
