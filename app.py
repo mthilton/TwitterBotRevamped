@@ -55,7 +55,7 @@ def tweet_song(sp, tf, twit, state):
     except twitfunc.InvalidTwitterAuthError as err:
         print(err)
 
-def update_db(mydb = None, sp):
+def update_db(sp, mydb = None):
 
     if mydb is None:
         return
