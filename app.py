@@ -2,6 +2,7 @@
 
 import sys, time, twitter, spotipy
 import datetime, traceback
+import mysql.connector
 import spotipy.util as util
 
 sys.path.append('../')
