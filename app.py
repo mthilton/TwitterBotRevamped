@@ -82,7 +82,7 @@ def update_db(sp, e):
 
     finally:
         #closing database connection.
-        if(connection.is_connected()):
+        if(mydb.is_connected()):
             mycursor.close()
             mydb.close()
 
