@@ -56,30 +56,41 @@ def tweet_song(sp, tf, twit, state):
     except twitfunc.InvalidTwitterAuthError as err:
         print(err)
 
-def update_db(sp, mydb = None):
+def update_db(sp, e):
 
-    if mydb is None:
-        return
+    try:
+        mydb = mysql.connector.connect(
+            host=e.mysql_host,
+            user=e.mysql_user,
+            passwd=e.mysql_pw,
+            database=e.mysql_db
+        )
 
-    mycursor = mydb.cursor()
+        mycursor = mydb.cursor()
 
-    sql = "INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"
-    val = (sp.ct_uri, sp.ct_name, list(sp.ct_artist_uri.keys())[0], sp.ct_artists, sp.ct_num_artists, 1, 1)
-    mycursor.execute(sql, val)
+        sql = "INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"
+        val = (sp.ct_uri, sp.ct_name, list(sp.ct_artist_uri.keys())[0], sp.ct_artists, sp.ct_num_artists, 1, 1)
+        mycursor.execute(sql, val)
 
-    mydb.commit()
+        mydb.commit()
 
-    print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
+        print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
-    mycursor.execute("SELECT * FROM SpTrackInfo")
+    except mysql.connector.Error as error :
+        mydb.rollback() #rollback if any exception occured
+        print("Failed inserting record into SpTrackInfo {}".format(error))
 
-    mycursor.close()
-
+    finally:
+        #closing database connection.
+        if(connection.is_connected()):
+            mycursor.close()
+            mydb.close()
 
 # Infinite loop that Initalizing everything, including state machine
-def mainLoop(e, mydb = None):
+def mainLoop():
 
     # Setting up Enviornment IE: Keys, and needed objs
+    e = env()
     tf = twitfunc()
     sp = spot(e)
     prev_tr_uri = str()
@@ -146,7 +157,7 @@ def mainLoop(e, mydb = None):
         # Tweet Song
         elif state == 3 and sp.sp_obj is not None:
             tweet_song(sp, tf, twit, state)
-            update_db(sp, mydb)
+            update_db(sp, e)
             prev_tr_uri = sp.ct_uri
             state = 4
             printed = False
@@ -203,14 +214,7 @@ testfile.close()
 
 # Enables Proper Logging of the program
 try:
-    e = env()
-    mydb = mysql.connector.connect(
-        host=e.mysql_host,
-        user=e.mysql_user,
-        passwd=e.mysql_pw,
-        database=e.mysql_db
-    )
-    mainLoop(e, mydb)
+    mainLoop()
 except Exception as e:
     with open(sys.argv[1], "a") as log:
         currTime = get_curr_time()
