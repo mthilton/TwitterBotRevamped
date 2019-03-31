@@ -37,7 +37,7 @@ def check_printed(printed, state, format = None):
             print(state_strings[state].format(format))
 
 # Tweets the current song if able too. Also searches for varified artists' twitter handles on twitter
-def tweet_song(sp, state):
+def tweet_song(sp, e, state):
 
     try:
         # Twitter Authentication
@@ -166,7 +166,7 @@ def mainLoop():
         # Tweet Song
         elif state == 3 and sp.sp_obj is not None:
             sp_obj_ready = sp
-            tweet_song(sp_obj_ready, state)
+            tweet_song(sp_obj_ready, e, state)
             update_db(sp_obj_ready, e)
             prev_tr_uri = sp.ct_uri
             state = 4
