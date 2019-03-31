@@ -37,8 +37,17 @@ def check_printed(printed, state, format = None):
             print(state_strings[state].format(format))
 
 # Tweets the current song if able too. Also searches for varified artists' twitter handles on twitter
-def tweet_song(sp, tf, twit, state):
+def tweet_song(sp, state):
+
     try:
+        # Twitter Authentication
+        twit = twitter.Api(consumer_key=e.twit_consumer_key,
+        consumer_secret=e.twit_consumer_secret,
+        access_token_key=e.twit_access_token_key,
+        access_token_secret=e.twit_access_token_secret)
+
+        tf = twitfunc()
+
         tr_artist = tf.lookup_user(twit = twit, query = sp.ct_artists_list)
         status = twit.PostUpdate("Current Track: " + sp.ct_name + "\nArtists: " + sp.ct_artists + "\nListen now at: " + sp.ct_url)
         tweet_info = str("\033[34mTweet: \u001b[0m\n" + status.text + "\n\033[33mTweet ID: \u001b[0m" + status.id_str + "\n\033[31mTimestamp: \u001b[0m" + status.created_at + "\n")
@@ -68,7 +77,13 @@ def update_db(sp, e):
 
         mycursor = mydb.cursor()
 
-        sql = "INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"
+        print("[Debug] - Key to be inserted: {}".format(sp.ct_uri))
+
+        sql = """INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) \
+                 VALUES (%s, %s, %s, %s, %s, %s, %s) \
+                 ON DUPLICATE KEY \
+                 UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"""
+
         val = (sp.ct_uri, sp.ct_name, list(sp.ct_artist_uri.keys())[0], sp.ct_artists, sp.ct_num_artists, 1, 1)
         mycursor.execute(sql, val)
 
@@ -77,13 +92,13 @@ def update_db(sp, e):
         print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
     except mysql.connector.Error as error:
-        mydb.rollback() #rollback if any exception occured
+        mydb.rollback() # rollback if any exception occured
         print("Failed inserting record into SpTrackInfo {}".format(error))
 
     finally:
-        #closing database connection.
+
+        # closing database connection.
         if(mydb.is_connected()):
-            print("[Debug] - Closing Cursor and database connection!")
             mycursor.close()
             mydb.close()
 
@@ -92,7 +107,6 @@ def mainLoop():
 
     # Setting up Enviornment IE: Keys, and needed objs
     e = env()
-    tf = twitfunc()
     sp = spot(e)
     prev_tr_uri = str()
     state = 1
@@ -107,12 +121,6 @@ def mainLoop():
     # prog_gt_tqp = 4
     # wait_for_resume = 5
     while True:
-
-        # Twitter Authentication
-        twit = twitter.Api(consumer_key=e.twit_consumer_key,
-                            consumer_secret=e.twit_consumer_secret,
-                            access_token_key=e.twit_access_token_key,
-                            access_token_secret=e.twit_access_token_secret)
 
         # Spotify Authentication
         sp.update_obj(e)
@@ -158,7 +166,7 @@ def mainLoop():
         # Tweet Song
         elif state == 3 and sp.sp_obj is not None:
             sp_obj_ready = sp
-            tweet_song(sp_obj_ready, tf, twit, state)
+            tweet_song(sp_obj_ready, state)
             update_db(sp_obj_ready, e)
             prev_tr_uri = sp.ct_uri
             state = 4
