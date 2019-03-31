@@ -77,8 +77,6 @@ def update_db(sp, e):
 
         mycursor = mydb.cursor()
 
-        print("[Debug] - Key to be inserted: {}".format(sp.ct_uri))
-
         sql = """INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) \
                  VALUES (%s, %s, %s, %s, %s, %s, %s) \
                  ON DUPLICATE KEY \
@@ -89,7 +87,6 @@ def update_db(sp, e):
 
         mydb.commit()
 
-        print("[Debug] - The most recent command:\n{}".format(mycursor.statement))
         print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
     except mysql.connector.Error as error:
