@@ -89,6 +89,7 @@ def update_db(sp, e):
 
         mydb.commit()
 
+        print("[Debug] - The most recent command:\n{}".format(mycursor.statement))
         print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
     except mysql.connector.Error as error:
