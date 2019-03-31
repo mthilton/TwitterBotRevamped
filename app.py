@@ -76,7 +76,7 @@ def update_db(sp, e):
 
         print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
-    except mysql.connector.Error as error :
+    except mysql.connector.Error as error:
         mydb.rollback() #rollback if any exception occured
         print("Failed inserting record into SpTrackInfo {}".format(error))
 
@@ -156,11 +156,13 @@ def mainLoop():
 
         # Tweet Song
         elif state == 3 and sp.sp_obj is not None:
-            tweet_song(sp, tf, twit, state)
-            update_db(sp, e)
+            sp_obj_ready = sp
+            tweet_song(sp_obj_ready, tf, twit, state)
+            update_db(sp_obj_ready, e)
             prev_tr_uri = sp.ct_uri
             state = 4
             printed = False
+            sp_obj_ready = None
 
         # Progress > 3/4 track length && Tweeted
         elif state == 4 and sp.sp_obj is not None:
