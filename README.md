@@ -4,10 +4,11 @@ Takes current user listening data and creates and tweets out the song, artist, a
 ## Required Libraries
 - Spotipy
 - Python-Twitter
+- Mysql Connector
 
 ## Upcoming Features
 - (REVERTED) Instead of just having the artists' name, use their twitter handle so they have a direct link.
-- Create a database of songs listened to so we can have like a weekly top hits playlist created and tweeted out.
+- (COMPLETED!) Create a database of songs listened to so we can have like a weekly top hits playlist created and tweeted out.
 
 ## Changelog
 - 4/2/2019
