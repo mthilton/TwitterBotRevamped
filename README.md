@@ -10,6 +10,12 @@ Takes current user listening data and creates and tweets out the song, artist, a
 - Create a database of songs listened to so we can have like a weekly top hits playlist created and tweeted out.
 
 ## Changelog
+- 4/2/2019
+   - Been working a lot on the database aspect of things and cleaning up the app code itself.
+   - *NEW* Now have two playlists: one containing my alltime most listened to songs starting in March of 2019
+           and one containing my most listened to songs of that week. They can be found here: [Weekly] (https://open.spotify.com/user/12140121901/playlist/2mSILmJCJE6dIAU8GJuuho?si=sJxs9lmZS_SAgX8yYpww-A, "Matt's Weekly Hits") & [Alltime] (https://open.spotify.com/user/12140121901/playlist/4SPUd4E1c6Iam2cWKeub7y?si=r9rKJEu1RpCGq_5jfOBMbg, "Matt's Alltime Hits")
+   - Bugfixes... Many bug fixes...        
+
 - 1/5/2019
    - Reverting previous changes, linked too many incorrect accounts
 
