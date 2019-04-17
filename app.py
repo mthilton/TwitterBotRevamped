@@ -67,31 +67,31 @@ def tweet_song(sp, e, state):
 
 def update_db(sp, e):
 
-try:
-    with mysql.connector.connect(
-        host=e.mysql_host,
-        user=e.mysql_user,
-        passwd=e.mysql_pw,
-        database=e.mysql_db
-    ) as mysql_db:
+    try:
+        with mysql.connector.connect(
+            host=e.mysql_host,
+            user=e.mysql_user,
+            passwd=e.mysql_pw,
+            database=e.mysql_db
+        ) as mysql_db:
 
-        with mydb.cursor() as mycursor:
+            with mydb.cursor() as mycursor:
 
-            sql = """INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) \
-                     VALUES (%s, %s, %s, %s, %s, %s, %s) \
-                     ON DUPLICATE KEY \
-                     UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"""
+                sql = """INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) \
+                         VALUES (%s, %s, %s, %s, %s, %s, %s) \
+                         ON DUPLICATE KEY \
+                         UPDATE AllTime_Num_Playbacks = AllTime_Num_Playbacks + 1, Weekly_Num_Playbacks = Weekly_Num_Playbacks + 1"""
 
-            val = (sp.ct_uri, sp.ct_name, list(sp.ct_artist_uri.keys())[0], sp.ct_artists, sp.ct_num_artists, 1, 1)
-            mycursor.execute(sql, val)
+                val = (sp.ct_uri, sp.ct_name, list(sp.ct_artist_uri.keys())[0], sp.ct_artists, sp.ct_num_artists, 1, 1)
+                mycursor.execute(sql, val)
 
-            mydb.commit()
+                mydb.commit()
 
-            print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
+                print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
-except mysql.connector.Error as error:
-    mydb.rollback() # rollback if any exception occured
-    print("Failed inserting record into SpTrackInfo {}".format(error))
+    except mysql.connector.Error as error:
+        mydb.rollback() # rollback if any exception occured
+        print("Failed inserting record into SpTrackInfo {}".format(error))
 
 
 # Infinite loop that Initalizing everything, including state machine
