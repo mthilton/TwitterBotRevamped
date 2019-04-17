@@ -17,4 +17,6 @@ class env:
         self.mysql_user = keys[9].strip()
         self.mysql_pw = keys[10].strip()
         self.mysql_db = keys[11].strip()
+        self.alltime_pl = keys[12].strip()
+        self.weekly_pl = keys[13].strip()
         keys_file.close()
