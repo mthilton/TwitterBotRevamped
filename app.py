@@ -68,12 +68,7 @@ def tweet_song(sp, e, state):
 def update_db(sp, e):
 
     try:
-        with mysql.connector.connect(
-            host=e.mysql_host,
-            user=e.mysql_user,
-            passwd=e.mysql_pw,
-            database=e.mysql_db
-        ) as mysql_db:
+        with mysql.connector.connect( host=e.mysql_host, user=e.mysql_user, passwd=e.mysql_pw, database=e.mysql_db) as mysql_db:
 
             with mydb.cursor() as mycursor:
 
