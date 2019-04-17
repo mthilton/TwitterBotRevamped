@@ -67,6 +67,7 @@ def tweet_song(sp, e, state):
 
 def update_db(sp, e):
 
+try:
     with mysql.connector.connect(
         host=e.mysql_host,
         user=e.mysql_user,
@@ -88,9 +89,9 @@ def update_db(sp, e):
 
             print(mycursor.rowcount, "record inserted into SpTrackInfo in DB TBR.")
 
-            except mysql.connector.Error as error:
-                mydb.rollback() # rollback if any exception occured
-                print("Failed inserting record into SpTrackInfo {}".format(error))
+except mysql.connector.Error as error:
+    mydb.rollback() # rollback if any exception occured
+    print("Failed inserting record into SpTrackInfo {}".format(error))
 
 
 # Infinite loop that Initalizing everything, including state machine
