@@ -69,7 +69,6 @@ def update_db(sp, e):
 
     try:
         with mysql.connector.connect( host=e.mysql_host, user=e.mysql_user, passwd=e.mysql_pw, database=e.mysql_db) as mysql_db:
-
             with mydb.cursor() as mycursor:
 
                 sql = """INSERT INTO SpTrackInfo (tr_uri, tr_name, ar_uri, ar_name, num_artists, AllTime_Num_Playbacks, Weekly_Num_Playbacks) \
