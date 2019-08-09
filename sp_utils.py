@@ -7,6 +7,8 @@ class spot(object):
     class SpotEnvError(Exception):
         pass
 
+    class SpotifyAuthenticationError(Exception):
+        pass
 
     def __init__(self, env = None):
 
@@ -38,6 +40,20 @@ class spot(object):
         new_uri = uri.split(":")
         return new_uri[-1]
 
+    def __sp_obj_none(self):
+        self.ct_name = str()
+        self.ct_uri = str()
+        self.ct_num_artists = int()
+        self.ct_artists = str()
+        self.ct_artists_list = []
+        self.ct_artist_uri = {}
+        self.ct_url = str()
+        self.ct_progress = int()
+        self.ct_length = int()
+        self.ct_is_playing = False
+        self.tweeted = False
+        return
+
     # Authenticates the user, and holds the access token information
     # Essentially a copy paste of the function in spotipy.utils.
     # However I want to be able to refresh the token when it expires
@@ -49,7 +65,7 @@ class spot(object):
         client_id = env.spot_client_id
         client_secret = env.spot_client_secret
         redirect_uri = env.spot_redirect_uri
-        cache_path = ".cache-" + env.spot_username
+        cache_path = "./.cache/sp/app/.cache-" + env.spot_username
         self.sp_oauth = auth.SpotifyOAuth(client_id,
                                             client_secret,
                                             redirect_uri,
@@ -59,6 +75,18 @@ class spot(object):
         # try to get a valid token for this user, from the cache,
         # if not in the cache, the create a new (this will send
         # the user to a web page where they can authorize this app)
+
+        if self.sp_oauth is None or self.sp_oauth.cache_path is not cache_path:
+            raise SpotifyAuthenticationError("Unable to get Authenticated!")
+
+        # print("Spotipy oauth class: " + self.sp_oauth.cache_path)
+        # print("Passed to Spotipy  : " + cache_path)
+
+#        with open(cache_path,"r") as cache:
+#          info = cache.read()
+#           print("Here is whats in the cache file: " + info)
+#           if info is "":
+#              raiseSpotifyAuthenticationError("Cache File is empty!")
 
         token_info = self.sp_oauth.get_cached_token()
 
@@ -120,18 +148,9 @@ class spot(object):
         # Using the spotify obj get the current track
         payload = self.sp_obj.current_user_playing_track()
 
-        if payload is None:
-            self.ct_name = str()
-            self.ct_uri = str()
-            self.ct_num_artists = int()
-            self.ct_artists = str()
-            self.ct_artists_list = []
-            self.ct_artist_uri = {}
-            self.ct_url = str()
-            self.ct_progress = int()
-            self.ct_length = int()
-            self.ct_is_playing = False
-            self.tweeted = False
+        # Check to make sure payload is populated
+        if payload is None or payload['item'] is None:
+            self.__sp_obj_none(self)
             return
 
         # update the obj values with the new info
