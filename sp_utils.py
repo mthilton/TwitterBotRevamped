@@ -150,7 +150,7 @@ class spot(object):
 
         # Check to make sure payload is populated
         if payload is None or payload['item'] is None:
-            self.__sp_obj_none(self)
+            self.__sp_obj_none()
             return
 
         # update the obj values with the new info
