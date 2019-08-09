@@ -21,7 +21,6 @@ def get_curr_time():
 def check_printed(printed, state, format = None):
 
     state_strings = [
-        "Placeholder",
         "[{}] No user currently logged in, sleeping until somebody logs in!",
         "[{}] Have not listened to enough of the song!",
         "--------------------------------------------------------------------------\n\033[32mSucessful Tweet!\u001b[0m\n{}--------------------------------------------------------------------------",
@@ -30,7 +29,7 @@ def check_printed(printed, state, format = None):
     ]
 
     if not printed:
-        if state != 3:
+        if state != 2:
             print(state_strings[state].format(get_curr_time()))
 
         else:
@@ -107,48 +106,48 @@ def mainLoop():
     e = env()
     sp = spot(e)
     prev_tr_uri = str()
-    state = 1
+    state = 0
     printed = False
 
     # This is the main loop that the program will run.
     # States and their associated value:
     #
-    # no_user = 1
-    # prog_lt_tqp = 2
-    # tweet_song = 3
-    # prog_gt_tqp = 4
-    # wait_for_resume = 5
+    # no_user = 0
+    # prog_lt_tqp = 1
+    # tweet_song = 2
+    # prog_gt_tqp = 3
+    # wait_for_resume = 4
     while True:
 
         # Spotify Authentication
         sp.update_obj(e)
 
         # No User
-        if state == 1:
+        if state == 0:
             if sp.sp_obj is not None:
                 if not sp.ct_is_playing:
-                    state = 5
+                    state = 4
                     printed = False
 
                 else:
-                    state = 2
+                    state = 1
                     printed = False
             else:
                 check_printed(printed, state)
-                state = 1
+                state = 0
                 printed = True
 
         # Progress < 3/4 track Lenght
-        elif state == 2 and sp.sp_obj is not None:
+        elif state == 1 and sp.sp_obj is not None:
             if not sp.ct_is_playing:
-                state = 5
+                state = 4
                 printed = False
 
             elif (sp.ct_is_playing and
                  (3*sp.ct_length)/4 < sp.ct_progress and
                  not sp.tweeted and
                  sp.ct_uri == prev_tr_uri):
-                state = 3
+                state = 2
                 printed = False
 
             else:
@@ -158,55 +157,62 @@ def mainLoop():
 
                 prev_tr_uri = sp.ct_uri
                 check_printed(printed, state)
-                state = 2
+                state = 1
                 printed = True
 
         # Tweet Song
-        elif state == 3 and sp.sp_obj is not None:
+        elif state == 2:
+
+            # Apparently it is possible to get into this state without a valid obj
+            if sp.sp_obj is not None and sp.ct_name == "":
+                print("[{}]\033[31mWaring!\u001b[0m: Spotify object exists but no data filled! Forcing state 0!".format(get_curr_time()))
+                state = 0
+                continue
+
             sp_obj_ready = sp
             tweet_song(sp_obj_ready, e, state)
             update_db(sp_obj_ready, e)
             prev_tr_uri = sp.ct_uri
-            state = 4
+            state = 3
             printed = False
             sp_obj_ready = None
 
         # Progress > 3/4 track length && Tweeted
-        elif state == 4 and sp.sp_obj is not None:
+        elif state == 3 and sp.sp_obj is not None:
             if not sp.ct_is_playing:
-                state = 5
+                state = 4
                 printed = False
 
             elif sp.ct_uri != prev_tr_uri:
-                state = 2
+                state = 1
                 printed = False
                 sp.tweeted = False
 
             else:
                 check_printed(printed, state)
-                state =  4
+                state =  3
                 printed = True
 
         # Waiting for Playback to be Resumed
-        elif state == 5 and sp.sp_obj is not None:
+        elif state == 4 and sp.sp_obj is not None:
             if sp.ct_is_playing:
                 if sp.tweeted:
-                    state  = 4
+                    state  = 3
                     printed = False
 
                 else:
-                    state = 2
+                    state = 1
                     printed = False
 
             else:
                 check_printed(printed, state)
-                state = 5
+                state = 4
                 printed = True
 
-        # Correction for falling out of state, (Not State 1 but also sp_obj is None)
+        # Correction for falling out of state, (Not State 0 but also sp_obj is None)
         # Essentially resetting to the default state
         else:
-            state = 1
+            state = 0
             printed = False
 
         # Add a sleep(5) as to not spam either Api

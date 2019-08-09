@@ -1,7 +1,7 @@
 class env:
 
     def __init__(self):
-        keys_file = open("keys.txt", "r")
+        keys_file = open("/home/mthilton/TBR/bb/twitterbotrevamped/keys.txt", "r")
 
         keys = keys_file.readlines()
 
